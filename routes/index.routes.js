@@ -1,7 +1,8 @@
 const router = require("express").Router();
+const challengeRoutes = require("./challenge.routes");
 
 router.get("/", (req, res, next) => {
-  res.json("All good in here");
+  res.status(200).json("all good here");
 });
 
-module.exports = router;
+router.use("/files", challengeRoutes), (module.exports = router);
