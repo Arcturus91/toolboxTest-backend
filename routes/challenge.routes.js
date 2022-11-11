@@ -1,7 +1,8 @@
 const router = require("express").Router();
 
-const { getFiles } = require("../controllers/challenge.controller");
+const { getFiles,getData } = require("../controllers/challenge.controller");
 
-router.get("/data", getFiles);
+router.get("/", getFiles);
+router.get("/data", getData),
 
 module.exports = router;
