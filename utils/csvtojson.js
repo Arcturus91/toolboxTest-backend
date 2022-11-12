@@ -23,7 +23,7 @@ function csvtojson(csvData) {
    }
   }
 
-  const jsonText = JSON.stringify(objList);
+  const jsonText = JSON.parse(JSON.stringify(objList));
   return jsonText;
 }
 

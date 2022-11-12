@@ -8,33 +8,60 @@ const headers = {
 };
 
 //
-exports.getFiles = (req, res, next) => {
-  axios
-    .get("https://echo-serv.tbxnet.com/v1/secret/files", headers)
-    .then((response) => {
-      console.log(response.data);
-      res.status(200).json(response.data);
-    })
-    .catch((err) => console.log(err));
+exports.getFiles = async (req, res, next) => {
+  try {
+    const { data } = await axios.get(
+      "https://echo-serv.tbxnet.com/v1/secret/files",
+      headers
+    );
+    const titlesArray = data.files;
+
+    const filesDetailArray = await Promise.all(
+      titlesArray.map(async (titles) => {
+        try {
+          const { data } = await axios.get(
+            `https://echo-serv.tbxnet.com/v1/secret/file/${titles}`,
+            headers
+          );
+          csvData = data;
+          let jsonArray = csvToJson(csvData);
+          if (jsonArray.length > 0) {
+            let apiResponse = {};
+            apiResponse["file"] = `${titles}`;
+            apiResponse["lines"] = jsonArray;
+            return apiResponse;
+          }
+        } catch (err) {
+          console.log("iteration axios error: ", err);
+        }
+      })
+    );
+
+    const filesFormatted = filesDetailArray.filter((item) => {
+      return item !== undefined;
+    });
+
+    res.status(200).json(filesFormatted);
+    console.log(filesFormatted);
+  } catch (err) {
+    console.log("files request error: ", err);
+  }
 };
 
-exports.getData = (req, res, next) => {
+exports.getData = async (req, res, next) => {
   const { id } = req.params;
-  console.log(`https://echo-serv.tbxnet.com/v1/secret/file/${id}.csv`);
-  axios
-    .get(`https://echo-serv.tbxnet.com/v1/secret/file/${id}.csv`, headers)
-    .then((response) => {
-      csvData = response.data;
-      let jsonArray = csvToJson(csvData);
-      let apiResponse = {};
-
-      apiResponse["file"] = `${id}.csv`;
-      apiResponse["lines"] = jsonArray;
-      console.log(apiResponse);
-
-      res.status(200).json(apiResponse);
-    })
-    .catch((err) => {
-      res.status(err.response.status).json(err.response.statusText);
-    });
+  try {
+    const { data } = await axios.get(
+      `https://echo-serv.tbxnet.com/v1/secret/file/${id}.csv`,
+      headers
+    );
+    csvData = data;
+    let jsonArray = csvToJson(csvData);
+    let apiResponse = {};
+    apiResponse["file"] = `${id}.csv`;
+    apiResponse["lines"] = jsonArray;
+    res.status(200).json(apiResponse);
+  } catch (err) {
+    res.status(err.response.status).json(err.response.statusText);
+  }
 };
