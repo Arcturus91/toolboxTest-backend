@@ -1,8 +1,14 @@
-var assert = require('assert');
-describe('Array', function () {
-  describe('#indexOf()', function () {
-    it('should return -1 when the value is not present', function () {
-      assert.equal([1, 2, 3].indexOf(4), -1);
-    });
-  });
-});
+const axios=require('axios');
+const {expect}=require('chai');
+
+describe("Endpoint testing",async()=>{
+    it("Get Files Data",async()=>{
+        const response = await axios.get('http://localhost:5005/api/files/data', { 
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log(response.data);
+        expect(response.status).equals(200);
+    })
+})

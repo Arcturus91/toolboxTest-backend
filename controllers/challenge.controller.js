@@ -34,17 +34,17 @@ exports.getFiles = async (req, res, next) => {
       const titlesArray = data.files;
 
       const filesDetailArray = await Promise.all(
-        titlesArray.map(async (titles) => {
+        titlesArray.map(async (title) => {
           try {
             const { data } = await axios.get(
-              `https://echo-serv.tbxnet.com/v1/secret/file/${titles}`,
+              `https://echo-serv.tbxnet.com/v1/secret/file/${title}`,
               headers
             );
             csvData = data;
             let jsonArray = csvToJson(csvData);
             if (jsonArray.length > 0) {
               let apiResponse = {};
-              apiResponse["file"] = `${titles}`;
+              apiResponse["file"] = `${title}`;
               apiResponse["lines"] = jsonArray;
               return apiResponse;
             }
@@ -66,4 +66,35 @@ exports.getFiles = async (req, res, next) => {
   }
 };
 
+exports.getList = async (req, res, next) => {
+  try {
+    const { data } = await axios.get(
+      "https://echo-serv.tbxnet.com/v1/secret/files",
+      headers
+    );
+    const titlesArray = data.files;
 
+    const filesDetailArray = await Promise.all(
+      titlesArray.map(async (title) => {
+        try {
+          const { data } = await axios.get(
+            `https://echo-serv.tbxnet.com/v1/secret/file/${title}`,
+            headers
+          );
+
+          return title;
+        } catch (err) {
+          console.log("iteration axios error: ", err);
+        }
+      })
+    );
+
+    const filesFormatted = filesDetailArray.filter((item) => {
+      return item !== undefined;
+    });
+
+    res.status(200).json(filesFormatted);
+  } catch (err) {
+    console.log("files request error: ", err);
+  }
+};
